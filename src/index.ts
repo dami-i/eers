@@ -1,30 +1,8 @@
-import type { Application } from "express";
-import type { RequestHandler } from "express";
+import type { Application, RequestHandler } from "express";
 
-const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
+const httpMethods: HTTPMethod[] = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
 
-type PathDefinition = `/${string}`;
-type MiddlewareKey = "pre" | "use";
-type HTTPMethod = typeof httpMethods[number];
-type ExpressMethod = "get" | "post" | "put" | "patch" | "delete";
-type SpecKeyGroup = {
-	routes: PathDefinition[],
-	middlewares: MiddlewareKey[],
-	methods: HTTPMethod[],
-};
-type RouteSpec = {
-	use?: HandlerOptions;
-	pre?: HandlerOptions;
-	GET?: HandlerOptions;
-	POST?: HandlerOptions;
-	PUT?: HandlerOptions;
-	PATCH?: HandlerOptions;
-	DELETE?: HandlerOptions;
-	[path: PathDefinition]: HandlerOptions | RouteSpec;
-};
-type HandlerOptions = RequestHandler | RequestHandler[];
-
-export const setupRouter = (app: Application, specs: RouteSpec, baseRoute = "/") => {
+const setupRouter = (app: Application, specs: RouteSpec, baseRoute = "/") => {
 
 	const {
 		routes,
@@ -32,13 +10,7 @@ export const setupRouter = (app: Application, specs: RouteSpec, baseRoute = "/")
 		methods
 	} = Object
 		.keys(specs)
-		.reduce<SpecKeyGroup>((obj, key, i) => {
-			if (i === 0) {
-				obj.routes.pop();
-				obj.middlewares.pop();
-				obj.methods.pop();
-			}
-
+		.reduce<SpecKeyGroup>((obj, key) => {
 			if (key === "/") {
 				const message = `Empty routes ("/") not allowed. Place the handlers in the root object.`;
 				throw new Error(message);
@@ -46,14 +18,11 @@ export const setupRouter = (app: Application, specs: RouteSpec, baseRoute = "/")
 
 			if (key.startsWith("/")) {
 				obj.routes.push(key as PathDefinition);
-			}
-			else if (key === "use" || key === "pre") {
+			} else if (key === "use" || key === "pre") {
 				obj.middlewares.push(key);
-			}
-			else if (httpMethods.includes(key as HTTPMethod)) {
+			} else if (httpMethods.includes(key as HTTPMethod)) {
 				obj.methods.push(key as HTTPMethod);
-			}
-			else {
+			} else {
 				throw new Error(`Invalid key: ${key}`);
 			}
 
@@ -63,7 +32,6 @@ export const setupRouter = (app: Application, specs: RouteSpec, baseRoute = "/")
 			middlewares: [],
 			methods: [],
 		});
-
 
 	for (const mid of middlewares) {
 		const type = getTypeOf(specs[mid]!);
@@ -121,3 +89,27 @@ function getTypeOf(spec: HandlerOptions | RouteSpec) {
 	}
 	return "object";
 }
+
+export { setupRouter };
+
+export type RouteSpec = {
+	use?: HandlerOptions;
+	pre?: HandlerOptions;
+	GET?: HandlerOptions;
+	POST?: HandlerOptions;
+	PUT?: HandlerOptions;
+	PATCH?: HandlerOptions;
+	DELETE?: HandlerOptions;
+	[path: PathDefinition]: HandlerOptions | RouteSpec;
+};
+
+type PathDefinition = `/${string}`;
+type MiddlewareKey = "pre" | "use";
+type HTTPMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+type ExpressMethod = "get" | "post" | "put" | "patch" | "delete";
+type SpecKeyGroup = {
+	routes: PathDefinition[],
+	middlewares: MiddlewareKey[],
+	methods: HTTPMethod[],
+};
+type HandlerOptions = RequestHandler | RequestHandler[];

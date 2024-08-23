@@ -4,7 +4,8 @@
   "description": "Express Easy Router Setup. Set up your routes in an easy and declarative way.",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"testing\""
+    "test": "echo \"testing\"",
+    "build": "tsc --build --clean && tsc"
   },
   "repository": {
     "type": "git",
@@ -14,7 +15,7 @@
     "express",
     "router"
   ],
-  "author": "@dami-i",
+  "author": "Dami <dami@dami.com.br>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/dami-i/eers/issues"
@@ -22,7 +23,6 @@
   "homepage": "https://github.com/dami-i/eers#readme",
   "devDependencies": {
     "@types/express": "^4.17.21",
-    "@types/node": "^22.5.0",
     "typescript": "^5.5.4"
   }
 }
